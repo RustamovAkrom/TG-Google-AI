@@ -4,5 +4,5 @@ media/
 docs/
 db.sqlite3
 documentations.txt
-bot/
+bot_first/
 .env

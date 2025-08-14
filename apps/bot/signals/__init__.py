@@ -1,0 +1,1 @@
+from .send_news import * # noqa
