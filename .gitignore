@@ -5,3 +5,4 @@ docs/
 db.sqlite3
 documentations.txt
 bot/
+.env
