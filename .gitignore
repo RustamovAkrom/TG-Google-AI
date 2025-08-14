@@ -1,7 +1,6 @@
 __pycache__/
 venv/
 media/
-docs/
 db.sqlite3
 documentations.txt
 bot_first/
