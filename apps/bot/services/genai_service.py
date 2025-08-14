@@ -2,10 +2,29 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 import google.genai as genai
 from google.genai import types
-from .models_service import get_chat_histories
+from .models_service import get_chat_histories, get_user_ai_config
 import os
 import asyncio
 import mimetypes
+
+
+def build_genai_config(user_settings):
+    return types.GenerateContentConfig(
+        max_output_tokens=user_settings.max_output_tokens,
+        top_k=user_settings.top_k,
+        top_p=user_settings.top_p,
+        temperature=user_settings.temperature,
+        seed=user_settings.seed,
+        tools=[
+            types.Tool(url_context=types.UrlContext()) if t.get("type") == "url_context" else
+            types.Tool(google_search=types.GoogleSearch()) if t.get("type") == "google_search" else None
+            for t in user_settings.tools
+        ],
+        safety_settings=[
+            types.SafetySetting(category=s["category"], threshold=s["threshold"])
+            for s in user_settings.safety_settings
+        ],
+    )
 
 
 @sync_to_async
@@ -16,7 +35,7 @@ def genai_client(api_key: str = None) -> genai.Client:
 @sync_to_async
 def _create_chat_sync(client: genai.Client, model: str, config, history: list):
     return client.chats.create(model=model, config=config, history=history)
-
+    
 
 @sync_to_async
 def _send_message_sync(chat, message):
@@ -31,7 +50,7 @@ async def genai_chat_generation(
     config=None
 ):
 
-    history = await get_chat_histories(user_id=user_id)
+    history = await get_chat_histories(user_id=user_id, limit=5)
     contents = []
 
     for h in history:
@@ -58,6 +77,12 @@ async def genai_chat_generation(
     if user_parts:
         contents.append(types.UserContent(parts=user_parts))
 
-    chat = await _create_chat_sync(client, model, config, history=contents)
+    if config:
+        chat = await _create_chat_sync(client, model, config, history=contents)
+    else:
+        ai_settings = await get_user_ai_config(user_id=user_id)
+        config = build_genai_config(ai_settings)
+        chat = await _create_chat_sync(client, model, config, history=contents)
+        
     response = await _send_message_sync(chat, message=message)
     return response

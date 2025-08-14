@@ -22,14 +22,14 @@ async def start_bot(message: types.Message):
             language_code=message.from_user.language_code
         )
         text = (
-            f"**Salom {telegram_user.first_name} botga hush kelibsiz qisqacha malumot berib otaman bu botda siz suniy Intelekt (Google GenAI) bilan muloqat qila olasiz.**\n"
-            f"**Imkoniyatlar:**\n"
-            f"**Text - Matin korinishida muloqat qilish.**"
-            f"**Audio - Audio filar ustida ish olib borish.**"
-            f"**Video - Video filar ustida ish olib borish.**"
-            f"**Photo - Rasimlar ustida ish olib borish.**"
-            f"**Document - Har hil boshqa hujatlarni qayta ishlash.**"
-            f"__Qoshimcha malumot olish uchun /help komandasini kiriting ->__"
+            f"**Salom {telegram_user.first_name} botga hush kelibsiz qisqacha malumot berib otaman bu botda siz suniy Intelekt (Google GenAI) bilan muloqat qila olasiz.**\n\n"
+            f"**Imkoniyatlar:**\n\n"
+            f"**Text - Matin korinishida muloqat qilish.**\n"
+            f"**Audio - Audio filar ustida ish olib borish.**\n"
+            f"**Video - Video filar ustida ish olib borish.**\n"
+            f"**Photo - Rasimlar ustida ish olib borish.**\n"
+            f"**Document - Har hil boshqa hujatlarni qayta ishlash.**\n"
+            f"__Qoshimcha malumot olish uchun /help komandasini kiriting ->__\n"
         )
         await message.answer(text, parse_mode="Markdown")
     else:

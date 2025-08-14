@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from django.core.management.base import BaseCommand
-from apps.bot.middlewares.subscription import SubscriptionMiddleware
+from apps.bot.middlewares import SubscriptionMiddleware, TypingMiddleware
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
@@ -25,18 +25,27 @@ class Command(BaseCommand):
         asyncio.run(self.start_bot())
 
     async def start_bot(self):
+
+        # Intialization Bot
         logger.debug("Инициализация бота с токеном из настроек.")
         bot = Bot(
             token=settings.TELEGRAM_BOT_TOKEN, 
             default=DefaultBotProperties(parse_mode="HTML")
         )
 
+        # Creating Dispatcher
         logger.debug("Создание диспетчера и FSM-хранилища.")
         dp = Dispatcher(storage=MemoryStorage())
 
+
+        # Register Global Router which included all routers
         logger.debug("Регистрация всех роутеров с хендлерами.")
         dp.include_router(global_router)
+
+        # Register Middleware
         dp.message.middleware(SubscriptionMiddleware())
+        dp.message.middleware(TypingMiddleware())
+
         self.stdout.write(self.style.SUCCESS("🤖 Бот запущен. Ожидание сообщений..."))
         logger.info("Aiogram бот запущен и ожидает входящие сообщения.")
 

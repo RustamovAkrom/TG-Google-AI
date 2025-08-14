@@ -123,3 +123,5 @@ REQUIRED_CHANNELS = [
     "@akrom_blog_01",
     # "https://t.me/+2XAKAFO2Jc02MTgy"
 ]
+
+GETTING_GOOGLE_AI_KEY_DOCUMENTATION_URL = "https://github.com/RustamovAkrom/TG-Google-AI/blob/main/docs/getting_google_ai_key.md"

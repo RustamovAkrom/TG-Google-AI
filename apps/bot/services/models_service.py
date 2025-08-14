@@ -1,5 +1,5 @@
 from asgiref.sync import sync_to_async
-from apps.bot.models import TelegramUser, History
+from apps.bot.models import TelegramUser, History, GenAISettings
 
 @sync_to_async
 def create_telegram_user(
@@ -96,3 +96,9 @@ def clear_history(user_id: int) -> None:
     telegram_user = TelegramUser.objects.get(user_id=user_id)
     History.objects.filter(telegram_user=telegram_user).delete()
 
+
+@sync_to_async
+def get_user_ai_config(user_id) -> GenAISettings:
+    telegram_user = TelegramUser.objects.get(user_id=user_id)
+    genai_settings = GenAISettings.objects.filter(user=telegram_user).first()
+    return genai_settings

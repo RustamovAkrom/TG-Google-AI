@@ -4,7 +4,7 @@ from apps.bot.services import get_telegram_user, clear_history
 
 router = Router()
 
-@router.message(filters.Command("clear"))
+@router.message(filters.Command("clear_history"))
 async def clear_user_history(message: types.Message):
     user_id = message.from_user.id
     telegram_user = await get_telegram_user(user_id=user_id)

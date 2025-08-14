@@ -1,4 +1,4 @@
-from aiogram import Router, types, filters, F
+from aiogram import Router, types, filters, F, Bot
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from google.api_core import exceptions
@@ -17,6 +17,7 @@ from apps.bot.utils import safe_send_markdown, safe_send_plain
 from core.settings import GEMINI_API_KEY
 import asyncio
 import os
+from io import BytesIO
 
 
 router = Router()
@@ -54,7 +55,7 @@ async def handle_text(message: types.Message, state: FSMContext):
         if not api_key:
             await message.answer(
                 "🔑 У вас не установлен API ключ для Google AI.\n"
-                "Отправьте команду set_access_key чтобы его установить."
+                "Отправьте команду /set_access_key чтобы его установить."
             )
             return
         
@@ -116,11 +117,22 @@ async def handle_text(message: types.Message, state: FSMContext):
     finally:
         await state.clear()
 
+MIME_TYPES = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".mp4": "video/mp4",
+    ".mp3": "audio/mpeg",
+    ".pdf": "application/pdf",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".txt": "text/plain",
+    # добавь по необходимости
+}
 
 async def find_extension_from_handle_media(
     message: types.Message
-) -> tuple[types.PhotoSize | types.Video | types.Audio | types.Document | None, str | None, str | None]:
-    
+) -> tuple[types.PhotoSize | types.Video | types.Audio | types.Document | None, str | None, str | None, str | None]:
+
     if message.photo:
         media = message.photo[-1]
         message_type = "image"
@@ -141,7 +153,7 @@ async def find_extension_from_handle_media(
         return None, None, None
 
     return media, message_type, extension
-    
+
 
 @router.message(F.content_type.in_({"photo", "video", "audio", "document"}))
 async def handle_media(message: types.Message, state: FSMContext):
@@ -156,7 +168,7 @@ async def handle_media(message: types.Message, state: FSMContext):
         # Определяем медиа и расширение
         media, message_type, extension = await find_extension_from_handle_media(message)
 
-        if not (media, message_type, extension):
+        if not (media and message_type and extension):
             await message.answer("❌ Не удалось определить тип файла.")
             return
         
@@ -167,7 +179,7 @@ async def handle_media(message: types.Message, state: FSMContext):
 
         os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
 
-        # Скачиваем файл
+        # Скачиваем файл и сохраняем в Django FileField
         file_info = await message.bot.get_file(media.file_id)
         await message.bot.download_file(file_info.file_path, destination=absolute_path)
 
@@ -175,11 +187,10 @@ async def handle_media(message: types.Message, state: FSMContext):
             await message.answer("❌ Не удалось сохранить файл. Проверь MEDIA_ROOT.")
             return
 
-
-        # Сохраняем в историю (именно относительный путь!)
         with open(absolute_path, "rb") as f:
-            django_file = File(f, name=relative_path) # ------
+            django_file = File(f, name=os.path.basename(relative_path))
 
+            # Сохраняем в историю
             await create_history(
                 telegram_user=telegram_user,
                 role="user",
@@ -190,8 +201,8 @@ async def handle_media(message: types.Message, state: FSMContext):
 
         system_message = await message.answer(f"📁 {message_type.capitalize()} получен. Загружаю в AI...")
 
+        # Клиент AI
         api_key = telegram_user.access_token or GEMINI_API_KEY
-
         if not api_key:
             await message.answer(
                 "🔑 У вас не установлен API ключ для Google AI.\n"
@@ -199,59 +210,28 @@ async def handle_media(message: types.Message, state: FSMContext):
             )
             return
         
-        client = await genai_client(api_key=api_key) # User api key or system api key
- 
-        # Загружаем файл в AI
-        uploaded_file = await asyncio.to_thread(client.files.upload, file=absolute_path)
+        client = await genai_client(api_key=api_key)
 
-        # Формируем контент
-        contents = [caption_text] if caption_text else []
-        contents.append(uploaded_file)
-
-        # Генерация ответа
+        # Генерация ответа (файл подхватится из истории)
         response_ai = await genai_chat_generation(
             client=client,
             user_id=user_id,
-            message=contents
+            message=caption_text or ""
         )
 
-        response_ai_to_text = response_ai.text
-
-        if response_ai_to_text:
+        if response_ai.text:
             await create_history(
                 telegram_user=telegram_user,
                 role="model",
                 message_type="text",
-                content=response_ai_to_text
+                content=response_ai.text
             )
-            # await safe_send_markdown(message, response_text)
             await system_message.delete()
-            await safe_send_plain(message, response_ai_to_text)
+            await safe_send_plain(message, response_ai.text)
         else:
             await message.answer("🤔 AI не вернул текст.")
 
-    except exceptions.PermissionDenied:
-        await message.answer("❌ Доступ запрещён. Проверьте, верен ли API ключ и есть ли у него нужные права.")
-        await state.clear()
-        return
-
-    except exceptions.ResourceExhausted:
-        await message.answer("⚠ Квота по вашему API ключу исчерпана. Попробуйте позже или используйте другой ключ.")
-        await state.clear()
-        return
-
-    except exceptions.NotFound:
-        await message.answer("❌ API ключ не найден. Проверьте, что вы скопировали его полностью.")
-        await state.clear()
-        return
-
-    except exceptions.InvalidArgument:
-        await message.answer("❌ Некорректный API ключ. Проверьте формат ключа.")
-        await state.clear()
-        return
-
     except Exception as e:
-        await message.answer(f"⚠ Ошибка при анализе файла: {e}")
-
+        await message.answer(f"⚠ Ошибка при обработке файла: {e}")
     finally:
         await state.clear()

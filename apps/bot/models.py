@@ -75,3 +75,33 @@ class News(BaseAbstractModel):
 
     def __str__(self):
         return f"{self.title} ({'published' if self.is_published else 'draft'})"
+
+
+class GenAISettings(BaseAbstractModel):
+    RESPONSE_MODALITIES_CHOICES = [
+        ('TEXT', 'Text'),
+        ('JSON', 'JSON'),
+        ('IMAGE', 'Image'),
+    ]
+    SAFETY_THRESHOLD_CHOICES = [
+        ('BLOCK_NONE', 'Block None'),
+        ('BLOCK_ONLY_HIGH', 'Block Only High'),
+        ('BLOCK_MEDIUM_AND_HIGH', 'Block Medium & High'),
+    ]
+
+    user = models.OneToOneField(TelegramUser, on_delete=models.CASCADE, related_name="genai_settings")
+
+    # Main
+    model_name = models.CharField(max_length=100, default="gemini-2.0-flash")
+    temperature = models.FloatField(default=0.5)
+    top_k = models.IntegerField(default=2)
+    top_p = models.FloatField(default=0.5)
+    max_output_tokens = models.IntegerField(blank=True, null=True)
+    seed = models.IntegerField(blank=True, null=True)
+
+    # Arrays and complex settings
+    tools = models.JSONField(default=list)  # [{'type': 'url_context'}, {'type': 'google_search'}]
+    safety_settings = models.JSONField(default=list)  # [{'category': '', 'threshold': ''}]
+
+    def __str__(self):
+        return f"GenAI Settings for {self.user.user_id}"

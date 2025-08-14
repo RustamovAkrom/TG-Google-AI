@@ -7,4 +7,3 @@ class BotConfig(AppConfig):
 
     def ready(self):
         import apps.bot.signals
-        return super().ready()
