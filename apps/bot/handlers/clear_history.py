@@ -6,7 +6,7 @@ router = Router()
 
 
 @router.message(filters.Command("clear_history"))
-async def clear_user_history(message: types.Message):
+async def clear_user_history_handle(message: types.Message):
     user_id = message.from_user.id
     telegram_user = await get_telegram_user(user_id=user_id)
 

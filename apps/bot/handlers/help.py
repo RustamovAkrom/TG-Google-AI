@@ -6,7 +6,7 @@ router = Router()
 
 
 @router.message(Command("help"))
-async def help_command(message: types.Message):
+async def help_handle(message: types.Message):
     text = text = (
         "📚 <b>Справка по боту</b>\n\n"
         "Доступные команды:\n"

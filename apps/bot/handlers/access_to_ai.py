@@ -12,13 +12,13 @@ class AccessTokenProcess(StatesGroup):
 
 
 @router.message(filters.Command("set_access_key"))
-async def set_genai_access_key(message: types.Message, state: FSMContext):
+async def set_access_key_state(message: types.Message, state: FSMContext):
     await state.set_state(AccessTokenProcess.waiting_for_access_key)
     await message.answer("🔑 Пожалуйста, введите ваш API ключ Google AI:")
 
 
 @router.message(AccessTokenProcess.waiting_for_access_key)
-async def process_access_key(message: types.Message, state: FSMContext):
+async def set_access_key_handle(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     access_key = message.text.strip()
 

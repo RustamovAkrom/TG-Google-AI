@@ -1,4 +1,6 @@
-from aiogram import Router, types, filters, F, Bot
+import os
+
+from aiogram import Router, types, F
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from google.api_core import exceptions
@@ -13,11 +15,12 @@ from apps.bot.services import (
     genai_client,
     genai_chat_generation,
 )
-from apps.bot.utils import safe_send_markdown, safe_send_plain
+from apps.bot.utils import (
+    safe_send_markdown,
+    safe_send_plain,
+    find_extension_from_handle_media
+)
 from core.settings import GEMINI_API_KEY
-import asyncio
-import os
-from io import BytesIO
 
 
 router = Router()
@@ -34,7 +37,7 @@ async def reject_while_processing(message: types.Message, state: FSMContext):
 
 
 @router.message(F.text)
-async def handle_text(message: types.Message, state: FSMContext):
+async def text_handle(message: types.Message, state: FSMContext):
     await state.set_state(ChatStates.waiting_for_ai)
 
     system_message = await message.answer("🔁 Обрабатываю ваш запрос, подождите...")
@@ -122,52 +125,9 @@ async def handle_text(message: types.Message, state: FSMContext):
         await state.clear()
 
 
-MIME_TYPES = {
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".png": "image/png",
-    ".mp4": "video/mp4",
-    ".mp3": "audio/mpeg",
-    ".pdf": "application/pdf",
-    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ".txt": "text/plain",
-    # добавь по необходимости
-}
-
-
-async def find_extension_from_handle_media(
-    message: types.Message,
-) -> tuple[
-    types.PhotoSize | types.Video | types.Audio | types.Document | None,
-    str | None,
-    str | None,
-    str | None,
-]:
-
-    if message.photo:
-        media = message.photo[-1]
-        message_type = "image"
-        extension = ".jpg"
-    elif message.video:
-        media = message.video
-        message_type = "video"
-        extension = ".mp4"
-    elif message.audio:
-        media = message.audio
-        message_type = "audio"
-        extension = ".mp3"
-    elif message.document:
-        media = message.document
-        message_type = "document"
-        extension = os.path.splitext(media.file_name or "")[1] or ""
-    else:
-        return None, None, None
-
-    return media, message_type, extension
-
 
 @router.message(F.content_type.in_({"photo", "video", "audio", "document"}))
-async def handle_media(message: types.Message, state: FSMContext):
+async def media_handle(message: types.Message, state: FSMContext):
     await state.set_state(ChatStates.waiting_for_ai)
 
     user_id = message.from_user.id

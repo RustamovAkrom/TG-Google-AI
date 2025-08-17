@@ -12,7 +12,7 @@ router = Router()
 
 
 @router.message(CommandStart())
-async def start_bot(message: types.Message):
+async def start_handle(message: types.Message):
     user_id = message.from_user.id
 
     telegram_user = await get_telegram_user(user_id=user_id)
