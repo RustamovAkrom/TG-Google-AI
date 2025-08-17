@@ -13,7 +13,7 @@ class FeedbackGroup(StatesGroup):
 @router.message(filters.Command("feedback"))
 async def feedback_handle(message: types.Message, state: FSMContext):
     await state.set_state(FeedbackGroup.message)
-    await message.answer("🔑 Пожалуйста, введите ваш Feedback:")
+    await message.answer("🔑 Пожалуйста, введите ваше сообщение :")
 
 
 @router.message(FeedbackGroup.message)
@@ -22,3 +22,5 @@ async def create_feedback_message(message: types.Message, state: FSMContext):
     message = message.text
 
     await create_feedback(user_id, message)
+    await state.clear()
+    await message.answer("сообщение было принято")

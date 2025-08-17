@@ -7,14 +7,29 @@ import os
 import asyncio
 import mimetypes
 
+MAX_HISTORY_CHARS = 3000  # например, 3k символов
+AI_HISTORY_LIMIT = 3
+
+
+def trim_history(contents, max_chars=MAX_HISTORY_CHARS):
+    total = 0
+    trimmed = []
+    for c in reversed(contents):  # берём с конца (самые свежие)
+        size = sum(len(p.text) for p in c.parts if hasattr(p, "text"))
+        if total + size > max_chars:
+            break
+        trimmed.append(c)
+        total += size
+    return list(reversed(trimmed))
+
 
 def build_genai_config(user_settings):
     return types.GenerateContentConfig(
-        max_output_tokens=user_settings.max_output_tokens,
-        top_k=user_settings.top_k,
-        top_p=user_settings.top_p,
-        temperature=user_settings.temperature,
-        seed=user_settings.seed,
+        max_output_tokens=user_settings.max_output_tokens or settings.GEMINI_MAX_OUTPUT_TOKENS,
+        top_k=user_settings.top_k or settings.GEMINI_TOP_K,
+        top_p=user_settings.top_p or settings.GEMINI_TOP_P,
+        temperature=user_settings.temperature or settings.GEMINI_TEMPERATURE,
+        seed=user_settings.seed or settings.GEMINI_SEED,
         tools=[
             (
                 types.Tool(url_context=types.UrlContext())
@@ -56,8 +71,8 @@ async def genai_chat_generation(
     model: str = "gemini-2.0-flash",
     config=None,
 ):
-
-    history = await get_chat_histories(user_id=user_id, limit=5)
+    
+    history = await get_chat_histories(user_id=user_id, limit=AI_HISTORY_LIMIT)
     contents = []
 
     for h in history:
@@ -83,6 +98,9 @@ async def genai_chat_generation(
     # ... handle if message includes file similarly ...
     if user_parts:
         contents.append(types.UserContent(parts=user_parts))
+    
+    # Trip Content
+    contents = trim_history(contents, max_chars=MAX_HISTORY_CHARS)
 
     if config:
         chat = await _create_chat_sync(client, model, config, history=contents)

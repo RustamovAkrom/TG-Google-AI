@@ -54,7 +54,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "core.wsgi.application"
-# ASGI_APPLICATION = "core.asgi.application"
+ASGI_APPLICATION = "core.asgi.application"
 
 DATABASES = {
     "default": {
@@ -108,9 +108,25 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# 🔑 API key
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+# ⚙️ Основные параметры генерации
+GEMINI_MAX_OUTPUT_TOKENS = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", 1024))
+GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", 0.7))
+GEMINI_TOP_K = int(os.getenv("GEMINI_TOP_K", 40))
+GEMINI_TOP_P = float(os.getenv("GEMINI_TOP_P", 0.95))
+GEMINI_SEED = int(os.getenv("GEMINI_SEED", 42))  # можно оставить None
+
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+TELEGRAM_BOT_COMMANDS = [
+    {"command": "/start", "description": "Start Bot"},
+    {"command": "/help", "description": "Helper"},
+    {"command": "/feedback", "description": "Send Feedback"},
+    {"command": "/set_access_key", "description": "Set your access key from Google AI Studio"},
+    {"command": "/clear_history", "description": "Clear all history"},
+]
 
 # Subscribe to my channels for using AI
 REQUIRED_CHANNELS = [
@@ -118,3 +134,4 @@ REQUIRED_CHANNELS = [
 ]
 
 GETTING_GOOGLE_AI_KEY_DOCUMENTATION_URL = "https://github.com/RustamovAkrom/TG-Google-AI/blob/main/docs/getting_google_ai_key.md"
+

@@ -15,11 +15,16 @@ class IsUserActiveMiddleware(BaseMiddleware):
         bot: Bot = data["bot"]
         user_id: int = event.from_user.id
 
-        telegram_user = await get_telegram_user(user_id)
-        if telegram_user.is_active:
-            return await handler(event, data)
-        else:
-            await event.answer(f"You can not use bot because that blocked.")
+        try:
+            telegram_user = await get_telegram_user(user_id)
+            if telegram_user.is_active:
+                return await handler(event, data)
+            else:
+                await event.answer(f"You can not use bot because that blocked.")
+                return
+        except Exception as e:
+            print(e)
+            await event.answer("Anonymouuse User! Please click to /start")
             return
 
 

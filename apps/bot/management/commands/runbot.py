@@ -52,7 +52,7 @@ class Command(BaseCommand):
         # Register Middleware
         dp.message.middleware(SubscriptionMiddleware())
         dp.message.middleware(TypingMiddleware())
-        dp.message.middleware(IsUserActiveMiddleware())
+        # dp.message.middleware(IsUserActiveMiddleware())
 
         self.stdout.write(self.style.SUCCESS("🤖 Бот запущен. Ожидание сообщений..."))
         logger.info("Aiogram бот запущен и ожидает входящие сообщения.")

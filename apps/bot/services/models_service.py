@@ -29,8 +29,8 @@ def get_telegram_user(user_id: int) -> TelegramUser:
 
 
 @sync_to_async
-def get_telegram_users() -> QuerySet[TelegramUser]:
-    return TelegramUser.objects.all()
+def get_telegram_users():
+    return list(TelegramUser.objects.all())
 
 
 @sync_to_async
