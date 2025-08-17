@@ -40,3 +40,5 @@ class SubscriptionMiddleware(BaseMiddleware):
                 return
 
         return await handler(event, data)
+
+__all__ = ("SubscriptionMiddleware", )

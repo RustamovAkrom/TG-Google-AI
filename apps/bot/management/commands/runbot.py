@@ -1,13 +1,21 @@
 import asyncio
 import logging
-from django.core.management.base import BaseCommand
-from apps.bot.middlewares import SubscriptionMiddleware, TypingMiddleware
+
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
+
+from django.core.management.base import BaseCommand
 from django.conf import settings
 
+from apps.bot.middlewares import (
+    SubscriptionMiddleware, 
+    TypingMiddleware, 
+    IsUserActiveMiddleware,
+)
+
 from apps.bot.handlers import *
+
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -45,6 +53,7 @@ class Command(BaseCommand):
         # Register Middleware
         dp.message.middleware(SubscriptionMiddleware())
         dp.message.middleware(TypingMiddleware())
+        dp.message.middleware(IsUserActiveMiddleware())
 
         self.stdout.write(self.style.SUCCESS("🤖 Бот запущен. Ожидание сообщений..."))
         logger.info("Aiogram бот запущен и ожидает входящие сообщения.")

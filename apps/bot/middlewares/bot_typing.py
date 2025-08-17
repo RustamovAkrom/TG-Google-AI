@@ -17,3 +17,5 @@ class TypingMiddleware(BaseMiddleware):
             return await handler(event, data)  # выполняем хендлер
         finally:
             typing_task.cancel()  # останавливаем "печатает..."
+
+__all__ = ("TypingMiddleware",)

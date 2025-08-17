@@ -1,5 +1,7 @@
 from asgiref.sync import sync_to_async
-from apps.bot.models import TelegramUser, History, GenAISettings
+from django.db.models import QuerySet
+from apps.bot.models import TelegramUser, History, GenAISetting
+
 
 @sync_to_async
 def create_telegram_user(
@@ -29,6 +31,13 @@ def get_telegram_user(
 
 
 @sync_to_async
+def get_telegram_users(
+
+) -> QuerySet[TelegramUser]:
+    return TelegramUser.objects.all()
+
+
+@sync_to_async
 def update_telegram_user(
         user_id: int, **kwargs
 ) -> TelegramUser | None:
@@ -40,6 +49,7 @@ def update_telegram_user(
                 setattr(telegram_user, key, value)
         telegram_user.save()
     return telegram_user
+
 
 @sync_to_async
 def deactivate_telegram_user(
@@ -53,7 +63,7 @@ def deactivate_telegram_user(
     
 
 @sync_to_async
-def set_telegram_user_access_token(user_id: int, access_token: str):
+def set_telegram_user_access_token(user_id: int, access_token: str) -> bool:
     try:
         telegram_user = TelegramUser.objects.filter(user_id=user_id).first()
         telegram_user.access_token = access_token
@@ -91,6 +101,7 @@ def get_chat_histories(user_id: int, limit: int=10) -> list[History]:
         .order_by('-created_at')[:limit][::-1]
     )
 
+
 @sync_to_async
 def clear_history(user_id: int) -> None:
     telegram_user = TelegramUser.objects.get(user_id=user_id)
@@ -98,7 +109,7 @@ def clear_history(user_id: int) -> None:
 
 
 @sync_to_async
-def get_user_ai_config(user_id) -> GenAISettings:
+def get_user_ai_config(user_id) -> GenAISetting:
     telegram_user = TelegramUser.objects.get(user_id=user_id)
-    genai_settings = GenAISettings.objects.filter(user=telegram_user).first()
+    genai_settings = GenAISetting.objects.filter(user=telegram_user).first()
     return genai_settings

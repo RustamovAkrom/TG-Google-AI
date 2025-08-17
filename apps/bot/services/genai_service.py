@@ -82,7 +82,7 @@ async def genai_chat_generation(
     else:
         ai_settings = await get_user_ai_config(user_id=user_id)
         config = build_genai_config(ai_settings)
-        chat = await _create_chat_sync(client, model, config, history=contents)
+        chat = await _create_chat_sync(client, ai_settings.model_name, config, history=contents)
         
     response = await _send_message_sync(chat, message=message)
     return response
