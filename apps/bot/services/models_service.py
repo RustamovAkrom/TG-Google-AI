@@ -1,6 +1,6 @@
 from asgiref.sync import sync_to_async
 from django.db.models import QuerySet
-from apps.bot.models import TelegramUser, History, GenAISetting
+from apps.bot.models import TelegramUser, History, GenAISetting, Feedback
 
 
 @sync_to_async
@@ -100,7 +100,16 @@ def clear_history(user_id: int) -> None:
 
 
 @sync_to_async
-def get_user_ai_config(user_id) -> GenAISetting:
+def get_user_ai_config(user_id: int) -> GenAISetting:
     telegram_user = TelegramUser.objects.get(user_id=user_id)
     genai_settings = GenAISetting.objects.filter(user=telegram_user).first()
     return genai_settings
+
+
+@sync_to_async
+def create_feedback(user_id: int, message: str) -> None:
+    telegram_user = TelegramUser.objects.get(user_id=user_id)
+    Feedback.objects.create(
+        user=telegram_user,
+        message=message
+    )

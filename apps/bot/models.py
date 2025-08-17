@@ -129,3 +129,16 @@ class GenAISetting(BaseAbstractModel):
         db_table = "genai_ai_settings"
         verbose_name = _("GenAI Setting")
         verbose_name_plural = _("GenAI Settings")
+
+
+class Feedback(BaseAbstractModel):
+    user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, related_name="feedbacks")
+    message = models.TextField(verbose_name=_("Message"))
+
+    class Meta:
+        db_table = "feedbacks"
+        verbose_name = _("Feedback")
+        verbose_name_plural = _("Feedbacks")
+    
+    def __str__(self):
+        return f"{self.user}: {self.message}"
