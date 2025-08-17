@@ -7,11 +7,11 @@ from apps.bot.services import get_telegram_user
 
 class IsUserActiveMiddleware(BaseMiddleware):
     async def __call__(
-            self, 
-            handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]], 
-            event: Message, 
-            data: Dict[str, Any]
-        ) -> Any:
+        self,
+        handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
+        event: Message,
+        data: Dict[str, Any],
+    ) -> Any:
         bot: Bot = data["bot"]
         user_id: int = event.from_user.id
 
@@ -19,9 +19,8 @@ class IsUserActiveMiddleware(BaseMiddleware):
         if telegram_user.is_active:
             return await handler(event, data)
         else:
-            await event.answer(
-                f"You can not use bot because that blocked."
-            )
+            await event.answer(f"You can not use bot because that blocked.")
             return
 
-__all__ = ("IsUserActiveMiddleware", )
+
+__all__ = ("IsUserActiveMiddleware",)

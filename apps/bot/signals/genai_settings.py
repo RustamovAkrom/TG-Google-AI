@@ -8,12 +8,15 @@ def create_user_settings(sender, instance, created, **kwargs):
     if created:
         GenAISetting.objects.create(
             user=instance,
-            tools=[
-                {"type": "url_context"},
-                {"type": "google_search"}
-            ],
+            tools=[{"type": "url_context"}, {"type": "google_search"}],
             safety_settings=[
-                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
-                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"},
+                {
+                    "category": "HARM_CATEGORY_HATE_SPEECH",
+                    "threshold": "BLOCK_ONLY_HIGH",
+                },
+                {
+                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                    "threshold": "BLOCK_ONLY_HIGH",
+                },
             ],
         )

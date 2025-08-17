@@ -9,8 +9,8 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from apps.bot.middlewares import (
-    SubscriptionMiddleware, 
-    TypingMiddleware, 
+    SubscriptionMiddleware,
+    TypingMiddleware,
     IsUserActiveMiddleware,
 )
 
@@ -21,7 +21,7 @@ from apps.bot.handlers import *
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,  # можно DEBUG для более подробного
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
 
@@ -37,14 +37,13 @@ class Command(BaseCommand):
         # Intialization Bot
         logger.debug("Инициализация бота с токеном из настроек.")
         bot = Bot(
-            token=settings.TELEGRAM_BOT_TOKEN, 
-            default=DefaultBotProperties(parse_mode="HTML")
+            token=settings.TELEGRAM_BOT_TOKEN,
+            default=DefaultBotProperties(parse_mode="HTML"),
         )
 
         # Creating Dispatcher
         logger.debug("Создание диспетчера и FSM-хранилища.")
         dp = Dispatcher(storage=MemoryStorage())
-
 
         # Register Global Router which included all routers
         logger.debug("Регистрация всех роутеров с хендлерами.")

@@ -16,8 +16,15 @@ def build_genai_config(user_settings):
         temperature=user_settings.temperature,
         seed=user_settings.seed,
         tools=[
-            types.Tool(url_context=types.UrlContext()) if t.get("type") == "url_context" else
-            types.Tool(google_search=types.GoogleSearch()) if t.get("type") == "google_search" else None
+            (
+                types.Tool(url_context=types.UrlContext())
+                if t.get("type") == "url_context"
+                else (
+                    types.Tool(google_search=types.GoogleSearch())
+                    if t.get("type") == "google_search"
+                    else None
+                )
+            )
             for t in user_settings.tools
         ],
         safety_settings=[
@@ -35,7 +42,7 @@ def genai_client(api_key: str = None) -> genai.Client:
 @sync_to_async
 def _create_chat_sync(client: genai.Client, model: str, config, history: list):
     return client.chats.create(model=model, config=config, history=history)
-    
+
 
 @sync_to_async
 def _send_message_sync(chat, message):
@@ -47,7 +54,7 @@ async def genai_chat_generation(
     user_id: str,
     message: list | str,
     model: str = "gemini-2.0-flash",
-    config=None
+    config=None,
 ):
 
     history = await get_chat_histories(user_id=user_id, limit=5)
@@ -63,10 +70,10 @@ async def genai_chat_generation(
             if os.path.exists(abs_path):
                 with open(abs_path, "rb") as f:
                     data = f.read()
-                mime_type = mimetypes.guess_type(abs_path)[0] or "application/octet-stream"
-                parts.append(
-                    types.Part.from_bytes(data=data, mime_type=mime_type)
+                mime_type = (
+                    mimetypes.guess_type(abs_path)[0] or "application/octet-stream"
                 )
+                parts.append(types.Part.from_bytes(data=data, mime_type=mime_type))
 
         if parts:
             contents.append(types.UserContent(parts=parts))
@@ -82,7 +89,9 @@ async def genai_chat_generation(
     else:
         ai_settings = await get_user_ai_config(user_id=user_id)
         config = build_genai_config(ai_settings)
-        chat = await _create_chat_sync(client, ai_settings.model_name, config, history=contents)
-        
+        chat = await _create_chat_sync(
+            client, ai_settings.model_name, config, history=contents
+        )
+
     response = await _send_message_sync(chat, message=message)
     return response

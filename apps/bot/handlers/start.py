@@ -2,7 +2,11 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram import types
 
-from apps.bot.services import create_telegram_user, update_telegram_user, get_telegram_user
+from apps.bot.services import (
+    create_telegram_user,
+    update_telegram_user,
+    get_telegram_user,
+)
 
 router = Router()
 
@@ -19,7 +23,7 @@ async def start_bot(message: types.Message):
             username=message.from_user.username,
             first_name=message.from_user.first_name,
             last_name=message.from_user.last_name,
-            language_code=message.from_user.language_code
+            language_code=message.from_user.language_code,
         )
         text = (
             f"**Salom {telegram_user.first_name} botga hush kelibsiz qisqacha malumot berib otaman bu botda siz suniy Intelekt (Google GenAI) bilan muloqat qila olasiz.**\n\n"
@@ -38,7 +42,7 @@ async def start_bot(message: types.Message):
             username=message.from_user.username,
             first_name=message.from_user.first_name,
             last_name=message.from_user.last_name,
-            language_code=message.from_user.language_code
+            language_code=message.from_user.language_code,
         )
         await message.answer(
             f"{telegram_user.username} siz allaqachon royhattan otkansiz va botan foydalana olasiz."

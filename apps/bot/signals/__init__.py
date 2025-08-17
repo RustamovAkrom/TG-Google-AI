@@ -1,2 +1,2 @@
-from .send_news import * # noqa
-from .genai_settings import * # noqa
+from .send_news import *  # noqa
+from .genai_settings import *  # noqa

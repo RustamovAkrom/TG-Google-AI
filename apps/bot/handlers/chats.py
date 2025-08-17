@@ -22,6 +22,7 @@ from io import BytesIO
 
 router = Router()
 
+
 class ChatStates(StatesGroup):
     waiting_for_ai = State()
 
@@ -37,7 +38,7 @@ async def handle_text(message: types.Message, state: FSMContext):
     await state.set_state(ChatStates.waiting_for_ai)
 
     system_message = await message.answer("🔁 Обрабатываю ваш запрос, подождите...")
-    
+
     user_message = message.text
     user_id = message.from_user.id
 
@@ -48,7 +49,7 @@ async def handle_text(message: types.Message, state: FSMContext):
             telegram_user=telegram_user,
             role="user",
             message_type="text",
-            content=user_message
+            content=user_message,
         )
         api_key = telegram_user.access_token or GEMINI_API_KEY
 
@@ -58,17 +59,15 @@ async def handle_text(message: types.Message, state: FSMContext):
                 "Отправьте команду /set_access_key чтобы его установить."
             )
             return
-        
-        client = await genai_client(api_key=api_key) # User api key or system api key
+
+        client = await genai_client(api_key=api_key)  # User api key or system api key
 
         response_ai = await genai_chat_generation(
-            client=client, 
-            user_id=user_id, 
-            message=user_message
+            client=client, user_id=user_id, message=user_message
         )
         response_ai_to_text = response_ai.text
 
-        if hasattr(response_ai, '__await__'):
+        if hasattr(response_ai, "__await__"):
             response_ai_to_text = await response_ai_to_text
 
         # History by model
@@ -76,7 +75,7 @@ async def handle_text(message: types.Message, state: FSMContext):
             telegram_user=telegram_user,
             role="model",
             message_type="text",
-            content=response_ai_to_text
+            content=response_ai_to_text,
         )
         await system_message.delete()
 
@@ -88,20 +87,25 @@ async def handle_text(message: types.Message, state: FSMContext):
             except Exception:
                 pass
         await safe_send_plain(message, response_ai_to_text)
-    
 
     except exceptions.PermissionDenied:
-        await message.answer("❌ Доступ запрещён. Проверьте, верен ли API ключ и есть ли у него нужные права.")
+        await message.answer(
+            "❌ Доступ запрещён. Проверьте, верен ли API ключ и есть ли у него нужные права."
+        )
         await state.clear()
         return
 
     except exceptions.ResourceExhausted:
-        await message.answer("⚠ Квота по вашему API ключу исчерпана. Попробуйте позже или используйте другой ключ.")
+        await message.answer(
+            "⚠ Квота по вашему API ключу исчерпана. Попробуйте позже или используйте другой ключ."
+        )
         await state.clear()
         return
 
     except exceptions.NotFound:
-        await message.answer("❌ API ключ не найден. Проверьте, что вы скопировали его полностью.")
+        await message.answer(
+            "❌ API ключ не найден. Проверьте, что вы скопировали его полностью."
+        )
         await state.clear()
         return
 
@@ -117,6 +121,7 @@ async def handle_text(message: types.Message, state: FSMContext):
     finally:
         await state.clear()
 
+
 MIME_TYPES = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
@@ -129,9 +134,15 @@ MIME_TYPES = {
     # добавь по необходимости
 }
 
+
 async def find_extension_from_handle_media(
-    message: types.Message
-) -> tuple[types.PhotoSize | types.Video | types.Audio | types.Document | None, str | None, str | None, str | None]:
+    message: types.Message,
+) -> tuple[
+    types.PhotoSize | types.Video | types.Audio | types.Document | None,
+    str | None,
+    str | None,
+    str | None,
+]:
 
     if message.photo:
         media = message.photo[-1]
@@ -171,7 +182,7 @@ async def handle_media(message: types.Message, state: FSMContext):
         if not (media and message_type and extension):
             await message.answer("❌ Не удалось определить тип файла.")
             return
-        
+
         # Генерируем имя файла
         file_name = f"{media.file_unique_id}{extension}"
         relative_path = os.path.join("history_files", file_name)
@@ -196,10 +207,12 @@ async def handle_media(message: types.Message, state: FSMContext):
                 role="user",
                 message_type=message_type,
                 content=caption_text,
-                file=django_file
+                file=django_file,
             )
 
-        system_message = await message.answer(f"📁 {message_type.capitalize()} получен. Загружаю в AI...")
+        system_message = await message.answer(
+            f"📁 {message_type.capitalize()} получен. Загружаю в AI..."
+        )
 
         # Клиент AI
         api_key = telegram_user.access_token or GEMINI_API_KEY
@@ -209,14 +222,12 @@ async def handle_media(message: types.Message, state: FSMContext):
                 "Отправьте команду /set_access_key чтобы его установить."
             )
             return
-        
+
         client = await genai_client(api_key=api_key)
 
         # Генерация ответа (файл подхватится из истории)
         response_ai = await genai_chat_generation(
-            client=client,
-            user_id=user_id,
-            message=caption_text or ""
+            client=client, user_id=user_id, message=caption_text or ""
         )
 
         if response_ai.text:
@@ -224,7 +235,7 @@ async def handle_media(message: types.Message, state: FSMContext):
                 telegram_user=telegram_user,
                 role="model",
                 message_type="text",
-                content=response_ai.text
+                content=response_ai.text,
             )
             await system_message.delete()
             await safe_send_plain(message, response_ai.text)

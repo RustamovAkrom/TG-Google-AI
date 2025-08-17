@@ -2,6 +2,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message
 import asyncio
 
+
 class TypingMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: Message, data: dict):
         async def typing_loop():
@@ -17,5 +18,6 @@ class TypingMiddleware(BaseMiddleware):
             return await handler(event, data)  # выполняем хендлер
         finally:
             typing_task.cancel()  # останавливаем "печатает..."
+
 
 __all__ = ("TypingMiddleware",)

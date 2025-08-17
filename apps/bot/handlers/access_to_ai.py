@@ -25,8 +25,9 @@ async def process_access_key(message: types.Message, state: FSMContext):
     is_success = await set_telegram_user_access_token(user_id, access_key)
     if is_success:
         await state.clear()
-        await message.answer("✅ Ваш персональный API ключ сохранён! Теперь бот будет использовать его.")
+        await message.answer(
+            "✅ Ваш персональный API ключ сохранён! Теперь бот будет использовать его."
+        )
     else:
         await state.clear()
         await message.answer("❌ваш ключ доступа не сохранился")
-    

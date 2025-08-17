@@ -1,2 +1,2 @@
-from .genai_service import * # noqa
-from .models_service import * # noqa
+from .genai_service import *  # noqa
+from .models_service import *  # noqa

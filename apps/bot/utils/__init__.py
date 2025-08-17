@@ -1,1 +1,1 @@
-from .text_to_md import * # noqa
+from .text_to_md import *  # noqa

@@ -1,7 +1,9 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 
-async def send_telegram_link(message: Message, title: str, webapp_url: str, description: str):
+async def send_telegram_link(
+    message: Message, title: str, webapp_url: str, description: str
+):
     """
     Отправляет сообщение с кнопкой на Telegram-ссылку.
 

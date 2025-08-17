@@ -11,12 +11,14 @@ from django.conf import settings
 def send_news_to_users(sender, instance: New, created, **kwargs):
     if instance.is_published:
         bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
-        
+
         telegram_users = TelegramUser.objects.all()
 
         for user in telegram_users:
             try:
-                bot.send_message(user.user_id, f"📰 {instance.title}\n\n{instance.text}")
+                bot.send_message(
+                    user.user_id, f"📰 {instance.title}\n\n{instance.text}"
+                )
             except Exception as e:
                 print(f"Ошибка отправки пользователю {user.user_id}: {e}")
         bot.session.close()

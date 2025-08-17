@@ -16,7 +16,7 @@ async def help_command(message: types.Message):
         "/clear_history - Очистить историю запросов\n\n"
     )
     await message.answer(text, parse_mode="HTML", disable_web_page_preview=False)
-    title =  "📄 Документация"
+    title = "📄 Документация"
     url = "https://github.com/RustamovAkrom/TG-Google-AI/blob/main/docs/getting_google_ai_key.md"
     description = "Как получить API-ключ Google AI Studio"
-    await send_telegram_link(message,title, url,  description)
+    await send_telegram_link(message, title, url, description)

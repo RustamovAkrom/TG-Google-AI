@@ -5,11 +5,11 @@ from apps.bot.models import TelegramUser, History, GenAISetting
 
 @sync_to_async
 def create_telegram_user(
-        user_id: int, 
-        username: str = None,
-        first_name: str = None,
-        last_name: str = None,
-        language_code: str = None,
+    user_id: int,
+    username: str = None,
+    first_name: str = None,
+    last_name: str = None,
+    language_code: str = None,
 ) -> TelegramUser:
     telegram_user, _ = TelegramUser.objects.get_or_create(
         user_id=user_id,
@@ -18,29 +18,23 @@ def create_telegram_user(
             "first_name": first_name,
             "last_name": last_name,
             "language_code": language_code,
-        }
+        },
     )
     return telegram_user
 
 
 @sync_to_async
-def get_telegram_user(
-        user_id: int
-) -> TelegramUser:
+def get_telegram_user(user_id: int) -> TelegramUser:
     return TelegramUser.objects.filter(user_id=user_id).first()
 
 
 @sync_to_async
-def get_telegram_users(
-
-) -> QuerySet[TelegramUser]:
+def get_telegram_users() -> QuerySet[TelegramUser]:
     return TelegramUser.objects.all()
 
 
 @sync_to_async
-def update_telegram_user(
-        user_id: int, **kwargs
-) -> TelegramUser | None:
+def update_telegram_user(user_id: int, **kwargs) -> TelegramUser | None:
     telegram_user = TelegramUser.objects.filter(user_id=user_id).first()
 
     if telegram_user:
@@ -52,15 +46,13 @@ def update_telegram_user(
 
 
 @sync_to_async
-def deactivate_telegram_user(
-        user_id: int
-) -> TelegramUser | None:
+def deactivate_telegram_user(user_id: int) -> TelegramUser | None:
     telegram_user = TelegramUser.objects.filter(user_id=user_id).first()
     if telegram_user:
         telegram_user.is_active = False
         telegram_user.save()
         return telegram_user
-    
+
 
 @sync_to_async
 def set_telegram_user_access_token(user_id: int, access_token: str) -> bool:
@@ -76,11 +68,11 @@ def set_telegram_user_access_token(user_id: int, access_token: str) -> bool:
 
 @sync_to_async
 def create_history(
-        telegram_user: TelegramUser,
-        role: str ,
-        message_type: str,
-        content: str = None,
-        file: str = None,
+    telegram_user: TelegramUser,
+    role: str,
+    message_type: str,
+    content: str = None,
+    file: str = None,
 ) -> History:
     History.objects.create(
         telegram_user=telegram_user,
@@ -92,13 +84,12 @@ def create_history(
 
 
 @sync_to_async
-def get_chat_histories(user_id: int, limit: int=10) -> list[History]:
+def get_chat_histories(user_id: int, limit: int = 10) -> list[History]:
     telegram_user = TelegramUser.objects.get(user_id=user_id)
     return (
-        History.objects
-        .filter(telegram_user=telegram_user)
+        History.objects.filter(telegram_user=telegram_user)
         .select_related("telegram_user")
-        .order_by('-created_at')[:limit][::-1]
+        .order_by("-created_at")[:limit][::-1]
     )
 
 

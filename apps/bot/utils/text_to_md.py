@@ -7,9 +7,9 @@ from aiogram.exceptions import TelegramBadRequest
 MAX_CHUNK_SIZE = 4000
 
 # Символы, которые нужно экранировать для MarkdownV2
-_MD_V2_ESCAPE = r'_*[]()~`>#+-=|{}.!'
+_MD_V2_ESCAPE = r"_*[]()~`>#+-=|{}.!"
 
-_md_v2_escape_re = re.compile(f'([{re.escape(_MD_V2_ESCAPE)}])')
+_md_v2_escape_re = re.compile(f"([{re.escape(_MD_V2_ESCAPE)}])")
 
 
 def escape_md_v2(text: str) -> str:
@@ -17,8 +17,8 @@ def escape_md_v2(text: str) -> str:
     if not text:
         return text
     # replace backslashes first to avoid double-escaping
-    text = text.replace('\\', '\\\\')
-    return _md_v2_escape_re.sub(r'\\\1', text)
+    text = text.replace("\\", "\\\\")
+    return _md_v2_escape_re.sub(r"\\\1", text)
 
 
 def split_preserve_codeblocks(text: str) -> List[Tuple[str, str]]:
@@ -26,12 +26,14 @@ def split_preserve_codeblocks(text: str) -> List[Tuple[str, str]]:
     Разбивает входной текст на список кортежей (kind, content),
     где kind == "text" или "code". Код определяется тройными backticks ```...```.
     """
-    pattern = re.compile(r'```(?:([\w+-]+)\n)?(.*?)```', re.DOTALL)  # захват языка (опционально) и содержимого
+    pattern = re.compile(
+        r"```(?:([\w+-]+)\n)?(.*?)```", re.DOTALL
+    )  # захват языка (опционально) и содержимого
     parts: List[Tuple[str, str]] = []
     last = 0
     for m in pattern.finditer(text):
         if m.start() > last:
-            parts.append(("text", text[last:m.start()]))
+            parts.append(("text", text[last : m.start()]))
         lang = m.group(1) or ""
         code = m.group(2) or ""
         # сохраняем вместе с языком — восстановим при отправке
@@ -45,7 +47,9 @@ def split_preserve_codeblocks(text: str) -> List[Tuple[str, str]]:
     return parts
 
 
-def chunk_parts(parts: List[Tuple[str, str]], max_size: int = MAX_CHUNK_SIZE) -> List[str]:
+def chunk_parts(
+    parts: List[Tuple[str, str]], max_size: int = MAX_CHUNK_SIZE
+) -> List[str]:
     """
     Собирает готовые к отправке чанки, не разрывая код-блоки.
     Если один код-блок длиннее max_size — дробит его по строкам.
@@ -67,7 +71,7 @@ def chunk_parts(parts: List[Tuple[str, str]], max_size: int = MAX_CHUNK_SIZE) ->
                 cur += safe
             else:
                 # пытаться ломать по переносам/пробелам
-                segs = re.split(r'(\s+)', safe)
+                segs = re.split(r"(\s+)", safe)
                 for seg in segs:
                     if not seg:
                         continue
@@ -96,7 +100,9 @@ def chunk_parts(parts: List[Tuple[str, str]], max_size: int = MAX_CHUNK_SIZE) ->
                 buf = ""
                 for line in lines:
                     prospective = buf + line
-                    if len(prospective) + 6 <= max_size:  # +6 for triple backticks and newlines
+                    if (
+                        len(prospective) + 6 <= max_size
+                    ):  # +6 for triple backticks and newlines
                         buf = prospective
                     else:
                         # flush current buf as a code block
@@ -133,7 +139,7 @@ async def safe_send_markdown(message, text: str):
                 # Last resort: разобьём chunk на мелкие части и отправим как plain text
                 for i in range(0, len(chunk), 2000):
                     try:
-                        await message.answer(chunk[i:i+2000])
+                        await message.answer(chunk[i : i + 2000])
                     except Exception:
                         # ничего не делаем — мы не хотим, чтобы бот падал
                         pass
@@ -149,16 +155,16 @@ async def safe_send_plain(message, text, chunk_size=4000):
 
     # Разбиваем длинные слова (> 50 символов) пробелами
     def split_long_words(t):
-        return re.sub(r'(\S{50})(?=\S)', r'\1 ', t)
+        return re.sub(r"(\S{50})(?=\S)", r"\1 ", t)
 
     text = split_long_words(text)
 
     # Разбиваем текст на куски до chunk_size
-    chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+    chunks = [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
     for chunk in chunks:
         try:
             await message.answer(chunk, parse_mode=None)  # Без parse_mode
         except TelegramBadRequest:
             # На всякий случай повторим с подрезкой
-            await message.answer(chunk[:chunk_size-50], parse_mode=None)
+            await message.answer(chunk[: chunk_size - 50], parse_mode=None)

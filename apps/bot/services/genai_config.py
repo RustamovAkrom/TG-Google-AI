@@ -3,8 +3,6 @@ from google import genai
 from google.genai import types
 
 
-
-
 # tools = [
 #     types.Tool(url_context=types.UrlContext),
 #     types.Tool(google_search=types.GoogleSearch)
