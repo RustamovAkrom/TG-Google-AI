@@ -1,29 +1,25 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
+from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv, find_dotenv
+
+from core.config import *  # noqa
 
 load_dotenv(find_dotenv(".env"))
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-#8!7p8#f^56=%@sy3#fg-t$1$39_ad6gy5$n6&-8w^9+9ccli#"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DEBUG")
 
 
-INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "apps.bot.apps.BotConfig",
-]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS").split(",")
+
+INSTALLED_APPS = [*THIRD_PARTY_APPS, *DEFAULT_APPS, *PROJECT_APPS]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -93,11 +89,24 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Tashkent"
 
 USE_I18N = True
 
 USE_TZ = True
+
+
+LANGUAGES = (
+    ("uz", _("Uzbek")),
+    ("ru", _("Russia")),
+    ("en", _("English")),
+)
+
+LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
+
+MODELTRANSLATION_LANGUAGES = ("uz", "ru", "en")
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = "uz"
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles/")
@@ -108,30 +117,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# 🔑 API key
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# ⚙️ Основные параметры генерации
-GEMINI_MAX_OUTPUT_TOKENS = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", 1024))
-GEMINI_TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", 0.7))
-GEMINI_TOP_K = int(os.getenv("GEMINI_TOP_K", 40))
-GEMINI_TOP_P = float(os.getenv("GEMINI_TOP_P", 0.95))
-GEMINI_SEED = int(os.getenv("GEMINI_SEED", 42))  # можно оставить None
+CORS_ALLOW_ALL_ORIGINS = True
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
-TELEGRAM_BOT_COMMANDS = [
-    {"command": "/start", "description": "Start Bot"},
-    {"command": "/help", "description": "Helper"},
-    {"command": "/feedback", "description": "Send Feedback"},
-    {"command": "/set_access_key", "description": "Set your access key from Google AI Studio"},
-    {"command": "/clear_history", "description": "Clear all history"},
-]
-
-# Subscribe to my channels for using AI
-REQUIRED_CHANNELS = [
-    "@akrom_blog_01",
-]
-
-GETTING_GOOGLE_AI_KEY_DOCUMENTATION_URL = "https://github.com/RustamovAkrom/TG-Google-AI/blob/main/docs/getting_google_ai_key.md"
-
+LOCALE_MIDDLEWARE_EXCLUDED_PATHS = ["/media/", "/static/"]

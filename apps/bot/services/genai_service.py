@@ -4,14 +4,10 @@ import google.genai as genai
 from google.genai import types
 from .models_service import get_chat_histories, get_user_ai_config
 import os
-import asyncio
 import mimetypes
 
-MAX_HISTORY_CHARS = 3000  # например, 3k символов
-AI_HISTORY_LIMIT = 3
 
-
-def trim_history(contents, max_chars=MAX_HISTORY_CHARS):
+def trim_history(contents, max_chars=settings.GEMINI_MAX_HISTORY_CHARS):
     total = 0
     trimmed = []
     for c in reversed(contents):  # берём с конца (самые свежие)
@@ -72,7 +68,7 @@ async def genai_chat_generation(
     config=None,
 ):
     
-    history = await get_chat_histories(user_id=user_id, limit=AI_HISTORY_LIMIT)
+    history = await get_chat_histories(user_id=user_id, limit=settings.GEMINI_MAX_HISTORY_LIMIT)
     contents = []
 
     for h in history:
@@ -100,7 +96,7 @@ async def genai_chat_generation(
         contents.append(types.UserContent(parts=user_parts))
     
     # Trip Content
-    contents = trim_history(contents, max_chars=MAX_HISTORY_CHARS)
+    contents = trim_history(contents, max_chars=settings.GEMINI_MAX_HISTORY_CHARS)
 
     if config:
         chat = await _create_chat_sync(client, model, config, history=contents)
