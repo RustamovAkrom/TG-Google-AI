@@ -39,7 +39,7 @@ UNFOLD = {
         "image": lambda request: static("images/login.png"),
     },
     # "STYLES": [
-    #     lambda request: static("css/tailwind.css"), That is error styles
+    #     lambda request: static("css/tailwind.css"), # That is error styles
     # ],
     "BORDER_RADIUS": "10px",
     "COLORS": {

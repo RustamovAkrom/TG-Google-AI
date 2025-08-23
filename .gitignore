@@ -6,3 +6,4 @@ documentations.txt
 bot_first/
 .env
 django_default_example/
+staticfiles/

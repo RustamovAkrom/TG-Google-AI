@@ -6,7 +6,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
+from core import settings
+
 
 from apps.bot.middlewares import (
     SubscriptionMiddleware,
